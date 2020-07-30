@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.mju.shiro_test.mapper.UserMapper">
+    <resultMap id="userMap" type="cn.mju.shiro_test.domain.User">
+      <id property="id" column="id"/>
+       <result property="username" column="username"/>
+       <result property="password" column="password"/>
+        <result property="email" column="email"/>
+        <collection property="roles" ofType="cn.mju.shiro_test.domain.Role">
+            <id property="roleId" column="role_Id"/>
+            <result property="roleName" column="role_name"/>
+            <collection property="perms" ofType="cn.mju.shiro_test.domain.Perm">
+                <id property="permId" column="perm_Id"/>
+                <result property="permName" column="perm_name"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getUserById" resultType="cn.mju.shiro_test.domain.User">
+        SELECT
+        *
+        FROM tb_user as a
+        WHERE a.id = #{id}
+
+    </select>
+
+
+    <select id="getUserByUsername" resultMap="userMap">
+        SELECT
+          a.id,a.username,a.password,a.email,
+          b.role_id,b.role_name,
+          c.perm_id,c.perm_name
+        FROM  tb_user_role as d left join tb_user as a on d.user_id =a.id inner join tb_role as b on d.role_id =b.role_id
+        left join tb_role_perm as e on b.role_id = e.role_id left join tb_perm as c on e.perm_id =c.perm_id
+        WHERE a.username =#{username}
+
+
+    </select>
+
+    <select id="getUserByPhone" resultType="cn.mju.shiro_test.domain.User">
+        SELECT
+        *
+        FROM tb_user a
+        WHERE a.phone = #{phone}
+    </select>
+
+    <insert id="addUser">
+        INSERT INTO tb_user(
+		username,password,email,phone,create_time,update_time)
+		VALUES
+		(#{username},#{password},#{email},#{phone},now(),now())
+    </insert>
+
+    <update id="updateUser">
+        UPDATE tb_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="username!=null and username!='' ">
+                username = #{username},
+            </if>
+            <if test="password!=null and password!='' ">
+                password = #{password},
+            </if>
+            <if test="email!=null and email!='' ">
+                email = #{email},
+            </if>
+            <if test="phone!=null and phone!='' ">
+                email = #{email},
+            </if>
+            update_time =now()
+
+        </trim>
+        WHERE id = #{id}
+    </update>
+</mapper>
